@@ -49,9 +49,9 @@ string[] runParams = [];
 string[] helpParams = [];
 
 IEnumerable<(string[] flags, Action<string[]> action)> actions = [
-    (["b", "build"], parameters => { buildParams = parameters; }),
-    (["r", "run"],   parameters => { runParams = parameters; }),
-    (["h", "help"],  parameters => { helpParams = parameters; })
+    (["b", "build"], (cli, parameters) => { buildParams = parameters; }),
+    (["r", "run"],   (cli, parameters) => { runParams = parameters; }),
+    (["h", "help"],  (cli, parameters) => { helpParams = parameters; })
 ];
 
 // 2. Configure CLI properties
@@ -141,9 +141,9 @@ public class CliTests
         string[] helpParams = [];
 
         IEnumerable<(string[], Action<string[]>)> actions = [
-            (["b", "build"], parameters => { buildParams = parameters; }),
-            (["r", "run"],   parameters => { runParams = parameters; }),
-            (["h", "help"],  parameters => { helpParams = parameters; })
+            (["b", "build"], (cli, parameters) => { buildParams = parameters; }),
+            (["r", "run"],   (cli, parameters) => { runParams = parameters; }),
+            (["h", "help"],  (cli, parameters) => { helpParams = parameters; })
         ];
 
         var cliProperties = new CliProperties(actions, ConsoleStreams.Dummy);
