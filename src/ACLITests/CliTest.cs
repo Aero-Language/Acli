@@ -15,9 +15,9 @@ public class CliTest
         
         IEnumerable<(string[], Action<Cli, string[]>)> actions =
         [
-            ( ["b", "build"], (cli, parameters) => { buildParams = parameters; } ),
-            ( ["r", "run"], (cli, parameters) => { runParams = parameters; } ),
-            ( ["h", "help"], (cli, parameters) => { helpParams = parameters; } ),
+            ( ["b", "build"], (_, parameters) => { buildParams = parameters; } ),
+            ( ["r", "run"], (_, parameters) => { runParams = parameters; } ),
+            ( ["h", "help"], (_, parameters) => { helpParams = parameters; } ),
         ];
         
         var cliProperties = new CliProperties(actions, ConsoleStreams.Dummy);

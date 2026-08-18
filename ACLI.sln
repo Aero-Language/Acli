@@ -2,7 +2,7 @@
 Microsoft Visual Studio Solution File, Format Version 12.00
 Project("{FAE04EC0-301F-11D3-BF4B-00C04F79EFBC}") = "ACLI", "src\ACLI\ACLI.csproj", "{039A2437-9365-4148-B331-91C4F7C14194}"
 EndProject
-Project("{FAE04EC0-301F-11D3-BF4B-00C04F79EFBC}") = "ACLITests", "ACLITests\ACLITests.csproj", "{1C5A1D24-5C66-4402-80C9-1D6AC38FD432}"
+Project("{FAE04EC0-301F-11D3-BF4B-00C04F79EFBC}") = "ACLITests", "src\ACLITests\ACLITests.csproj", "{1C5A1D24-5C66-4402-80C9-1D6AC38FD432}"
 EndProject
 Global
 	GlobalSection(SolutionConfigurationPlatforms) = preSolution
