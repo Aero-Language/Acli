@@ -1,7 +1,7 @@
 # ACLI - Advanced Command Line Interface
 
-[![NuGet Version](https://img.shields.io/nuget/v/ACLI.svg?style=flat-square)](https://www.nuget.org/packages/ACLI)
-[![NuGet Downloads](https://img.shields.io/nuget/dt/ACLI.svg?style=flat-square)](https://www.nuget.org/packages/ACLI)
+[![NuGet Version](https://img.shields.io/nuget/v/ACLI.svg?style=flat-square)](https://www.nuget.org/packages/AeroLang.ACLI)
+[![NuGet Downloads](https://img.shields.io/nuget/dt/ACLI.svg?style=flat-square)](https://www.nuget.org/packages/AeroLang.ACLI)
 [![Framework](https://img.shields.io/badge/framework-.NET%2010.0-purple.svg?style=flat-square)](https://dotnet.microsoft.com/)
 [![License](https://img.shields.io/badge/license-MIT-blue.svg?style=flat-square)](LICENSE)
 
@@ -25,13 +25,13 @@ ACLI (Advanced Command Line Interface) is a modern, lightweight, and extensible 
 Install ACLI using the .NET CLI:
 
 ```bash
-dotnet add package ACLI
+dotnet add package AeroLang.ACLI
 ```
 
 Or via Package Manager Console:
 
 ```powershell
-Install-Package ACLI
+Install-Package AeroLang.ACLI
 ```
 
 ---
