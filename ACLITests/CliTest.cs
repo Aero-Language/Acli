@@ -1,6 +1,7 @@
-﻿using Xunit;
+﻿using ACLI;
+using Xunit;
 
-namespace ACLI.Tests;
+namespace ACLITests;
 
 public class CliTest
 {
@@ -12,11 +13,11 @@ public class CliTest
         string[] runParams = [];
         string[] helpParams = [];
         
-        IEnumerable<(string[], Action<string[]>)> actions =
+        IEnumerable<(string[], Action<Cli, string[]>)> actions =
         [
-            ( ["b", "build"], (parameters) => { buildParams = parameters; } ),
-            ( ["r", "run"], (parameters) => { runParams = parameters; } ),
-            ( ["h", "help"], (parameters) => { helpParams = parameters; } ),
+            ( ["b", "build"], (cli, parameters) => { buildParams = parameters; } ),
+            ( ["r", "run"], (cli, parameters) => { runParams = parameters; } ),
+            ( ["h", "help"], (cli, parameters) => { helpParams = parameters; } ),
         ];
         
         var cliProperties = new CliProperties(actions, ConsoleStreams.Dummy);

@@ -95,7 +95,7 @@ public class Cli(CliProperties properties) : IDisposable
                         if (properties.Actions.TryGetValue(flag.Value, out var action))
                         {
                             // Invoke the action for the specific flag
-                            action.Invoke(parameters.ToArray()); 
+                            action.Invoke(this, parameters.ToArray());
                         }
                     }
                 }

@@ -2,7 +2,7 @@
 
 public record CliProperties : IDisposable
 {
-    public CliProperties(IEnumerable<(string[] flags, Action<string[]> action)> actions, ConsoleStreams streams)
+    public CliProperties(IEnumerable<(string[] flags, Action<Cli, string[]> action)> actions, ConsoleStreams streams)
     {
         var distinctActions = actions.Distinct().ToArray();
         var options = distinctActions.Select(t => t.flags).SelectMany(action => action).ToArray();
@@ -26,7 +26,7 @@ public record CliProperties : IDisposable
     }
     
     public readonly HashSet<string> Options;
-    public readonly IDictionary<string, Action<string[]>> Actions;
+    public readonly IDictionary<string, Action<Cli, string[]>> Actions;
     public readonly StreamReader Input;
     public readonly StreamWriter Output;
     public readonly StreamWriter Error;
