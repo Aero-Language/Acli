@@ -1,7 +1,7 @@
 # ACLI - Advanced Command Line Interface
 
-[![NuGet Version](https://img.shields.io/nuget/v/ACLI.svg?style=flat-square)](https://www.nuget.org/packages/AeroLang.ACLI/)
-[![NuGet Downloads](https://img.shields.io/nuget/dt/ACLI.svg?style=flat-square)](https://www.nuget.org/packages/AeroLang.ACLI/)
+[![NuGet Version](https://img.shields.io/nuget/v/AeroLang.ACLI.svg?style=flat-square)](https://www.nuget.org/packages/AeroLang.ACLI/)
+[![NuGet Downloads](https://img.shields.io/nuget/dt/AeroLang.ACLI.svg?style=flat-square)](https://www.nuget.org/packages/AeroLang.ACLI/)
 [![Framework](https://img.shields.io/badge/framework-.NET%2010.0-purple.svg?style=flat-square)](https://dotnet.microsoft.com/)
 [![License](https://img.shields.io/badge/license-MIT-blue.svg?style=flat-square)](LICENSE)
 
