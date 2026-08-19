@@ -5,18 +5,17 @@
 [![Framework](https://img.shields.io/badge/framework-.NET%2010.0-purple.svg?style=flat-square)](https://dotnet.microsoft.com/)
 [![License](https://img.shields.io/badge/license-MIT-blue.svg?style=flat-square)](LICENSE)
 
-ACLI (Advanced Command Line Interface) is a modern, lightweight, and extensible C# / .NET 10 library designed to make building robust command-line applications straightforward. It provides built-in stream handling, flag prefix validation, positional parameter grouping, and custom exception handling.
+ACLI (Advanced Command Line Interface) is a modern, lightweight, and extensible C# / .NET 10 library designed to make building command-line applications straightforward. It provides stream handling, flag prefix validation, super/sub-argument routing, and custom exception handling.
 
 ---
 
 ## Features
 
-- **Intuitive Configuration:** Define flags, aliases, and callback actions using modern C# tuple collections.
-- **.NET 10 Ready:** Built targeting .NET 10 for optimal performance and modern C# features.
-- **Flexible Prefixes:** Supports Dash (`-` / `--`), Slash (`/`), Custom prefixes, or No prefixes (`None`).
-- **Customizable Exceptions:** Tailor error handling for missing arguments, invalid prefixes, or unknown flags using delegate factories.
-- **Mockable Streams:** Accepts custom `ConsoleStreams` (or `ConsoleStreams.Dummy`) to streamline unit testing.
-- **Automatic Parameter Grouping:** Automatically routes positional parameters following a flag directly into its action delegate.
+- **Hierarchical Argument Parsing:** Define top-level `SuperArgument` commands along with optional nested `SubArgs`.
+- **Typed Argument Payloads:** Callback actions receive the `Cli` instance and an array of `PassedArg` records containing parsed arguments and positional values.
+- **Flexible Prefixes:** Supports `Dash` (`-`/`--`), `StrictSingleDash` (`-`), `Slash` (`/`), or `None` prefix options.
+- **Customizable Exception Factories:** Override error handlers for missing arguments, prefix mismatches, and unknown super-arguments.
+- **Mockable Streams:** Accepts custom `ConsoleStreams` (or `ConsoleStreams.Dummy`) to streamline testing.
 
 ---
 
@@ -38,93 +37,128 @@ Install-Package AeroLang.ACLI
 
 ## Quick Start
 
-The following example demonstrates setting up a CLI instance with actions for `build`, `run`, and `help`:
+The following example demonstrates setting up top-level `SuperArgument` options for `build`, `run`, and `help`:
 
 ```csharp
 using ACLI;
 
-// 1. Define action handlers
+// 1. Define variables to capture parameters
 string[] buildParams = [];
 string[] runParams = [];
 string[] helpParams = [];
 
-IEnumerable<(string[] flags, Action<string[]> action)> actions = [
-    (["b", "build"], (cli, parameters) => { buildParams = parameters; }),
-    (["r", "run"],   (cli, parameters) => { runParams = parameters; }),
-    (["h", "help"],  (cli, parameters) => { helpParams = parameters; })
+// 2. Define arguments using SuperArgument
+IEnumerable<SuperArgument> arguments = [
+    new SuperArgument(["b", "build"], (cli, args) => {
+        buildParams = args.FirstOrDefault()?.Values ?? [];
+    }),
+    new SuperArgument(["r", "run"], (cli, args) => {
+        runParams = args.FirstOrDefault()?.Values ?? [];
+    }),
+    new SuperArgument(["h", "help"], (cli, args) => {
+        helpParams = args.FirstOrDefault()?.Values ?? [];
+    })
 ];
 
-// 2. Configure CLI properties
-var cliProperties = new CliProperties(actions, ConsoleStreams.Default)
+// 3. Configure CLI properties
+var cliProperties = new CliProperties(arguments, ConsoleStreams.Default)
 {
-    PrefixType = FlagPrefixType.Dash,
-    SingleFlagOnly = true
+    PrefixType = FlagPrefixType.Dash
 };
 
-// 3. Initialize and execute
+// 4. Initialize and execute
 using var cli = new Cli(cliProperties);
+cli.Start("--build", "project.sln", "Release");
+```
 
-// Execute with command-line arguments
-cli.Start("--build", "project.sln", "--configuration", "Release");
+---
+
+## Sub-Arguments Support
+
+ACLI supports nested command structures by attaching `Argument[]` to a parent `SuperArgument`:
+
+```csharp
+var arguments = new SuperArgument[]
+{
+    new SuperArgument(
+        Names: ["remote"],
+        Command: (cli, args) => {
+            cli.PrintLn("Remote command executed.");
+        },
+        SubArgs: [
+            new Argument(["add"], (cli, args) => {
+                cli.PrintLn("Adding remote target...");
+            }),
+            new Argument(["remove"], (cli, args) => {
+                cli.PrintLn("Removing remote target...");
+            })
+        ]
+    )
+};
 ```
 
 ---
 
 ## Configuration (`CliProperties`)
 
-`CliProperties` controls flag behavior, stream assignment, and error handling.
+`CliProperties` configures argument mappings, prefix styles, I/O streams, and exception delegates.
 
 ### Core Options
 
-| Property | Type | Default | Description |
-| :--- | :--- | :--- | :--- |
-| `PrefixType` | `FlagPrefixType` | `FlagPrefixType.Dash` | Configures prefix syntax (`Dash`, `Slash`, `None`). |
-| `SingleFlagOnly` | `bool` | `true` | Restricts execution to a single flag per invocation when set to `true`. |
-| `Input` | `StreamReader` | *Derived* | Target standard input stream. |
-| `Output` | `StreamWriter` | *Derived* | Target standard output stream. |
-| `Error` | `StreamWriter` | *Derived* | Target standard error stream. |
+| Property     | Type             | Default               | Description                                                             |
+|:-------------|:-----------------|:----------------------|:------------------------------------------------------------------------|
+| `PrefixType` | `FlagPrefixType` | `FlagPrefixType.Dash` | Configures prefix syntax (`Dash`, `StrictSingleDash`, `Slash`, `None`). |
+| `Input`      | `StreamReader`   | *Derived*             | Standard input stream reader.                                           |
+| `Output`     | `StreamWriter`   | *Derived*             | Standard output stream writer.                                          |
+| `Error`      | `StreamWriter`   | *Derived*             | Standard error stream writer.                                           |
+
+### Flag Prefix Types
+
+- `FlagPrefixType.None`: DotNet style tooling.
+- `FlagPrefixType.Dash`: Unix/BSD style (`-b`, `--build`).
+- `FlagPrefixType.StrictSingleDash`: Windows PowerShell style (`-B`, `-Build`).
+- `FlagPrefixType.Slash`: Traditional Windows CMD style (`/b`, `/build`).
 
 ### Error Customization Delegates
 
-Exception factories can be overridden on `CliProperties` to match your application's error reporting standards:
+Override exception delegates on `CliProperties` to customize error behavior:
 
 ```csharp
-var properties = new CliProperties(actions, ConsoleStreams.Default)
+var properties = new CliProperties(arguments, ConsoleStreams.Default)
 {
     NoArgumentsError = () => new ArgumentException("Please supply at least one option. Use --help for usage details."),
-    TooManyArgumentsError = (count) => new InvalidOperationException($"Only one flag is allowed per command; received {count}."),
     IncorrectPrefixError = (expected, actual) => new FormatException($"Invalid prefix '{actual}'. Expected '{expected}'."),
-    DashPrefixError = () => new FormatException("Use '--' for multi-letter flags and '-' for single-letter flags.")
+    DashPrefixError = () => new FormatException("Use '--' for multi-letter flags and '-' for single-letter flags."),
+    IncorrectSuperArgError = (arg) => new ArgumentException($"'{arg}' is not a valid argument.")
 };
 ```
 
 ---
 
-## Stream Helper Methods
+## Stream Helper Methods & Properties
 
-The `Cli` class provides direct wrappers around configured input, output, and error streams:
+The `Cli` class provides I/O wrappers around configured input, output, and error streams:
 
 ```csharp
 using var cli = new Cli(cliProperties);
 
-// Standard Output
+// Writing
 cli.Print("Processing...");
 cli.PrintLn(" Done.");
-
-// Standard Error
 cli.Error("Failed to resolve dependencies.");
 
-// Standard Input
+// Reading
 char key = cli.Read();
 string line = cli.ReadLn();
 string content = cli.ReadAll();
+bool isEnd = cli.IsReadEnd; // Checks if standard input stream is at end
 ```
 
 ---
 
 ## Unit Testing Example
 
-Because console streams are abstracted through `ConsoleStreams`, testing CLI interactions requires no mock framework setup:
+Testing CLI interactions using `ConsoleStreams.Dummy`:
 
 ```csharp
 using Xunit;
@@ -137,16 +171,14 @@ public class CliTests
     {
         // Arrange
         string[] buildParams = [];
-        string[] runParams = [];
-        string[] helpParams = [];
 
-        IEnumerable<(string[], Action<string[]>)> actions = [
-            (["b", "build"], (cli, parameters) => { buildParams = parameters; }),
-            (["r", "run"],   (cli, parameters) => { runParams = parameters; }),
-            (["h", "help"],  (cli, parameters) => { helpParams = parameters; })
+        IEnumerable<SuperArgument> arguments = [
+            new SuperArgument(["b", "build"], (cli, args) => {
+                buildParams = args.FirstOrDefault()?.Values ?? [];
+            })
         ];
 
-        var cliProperties = new CliProperties(actions, ConsoleStreams.Dummy);
+        var cliProperties = new CliProperties(arguments, ConsoleStreams.Dummy);
         using var cli = new Cli(cliProperties);
 
         // Act
@@ -154,8 +186,6 @@ public class CliTests
 
         // Assert
         Assert.Equal(["test.aero", "run.aero"], buildParams);
-        Assert.Empty(runParams);
-        Assert.Empty(helpParams);
     }
 }
 ```
