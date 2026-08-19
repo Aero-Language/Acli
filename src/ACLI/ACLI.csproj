@@ -13,7 +13,13 @@
         <Authors>AeroLang</Authors>
         <Description>ACLI is a tool that makes it easy to configure and make your own CLI for your projects</Description>
         <RepositoryUrl>https://github.com/Aero-Language/ACLI</RepositoryUrl>
+        <PackageReadmeFile>README.md</PackageReadmeFile>
+        
+        <PackageRequireLicenseAcceptance>true</PackageRequireLicenseAcceptance>
         <PackageLicenseExpression>MIT</PackageLicenseExpression>
     </PropertyGroup>
 
+    <ItemGroup>
+        <None Include="..\..\README.md" Pack="true" PackagePath="\"/>
+    </ItemGroup>
 </Project>

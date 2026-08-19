@@ -1,23 +1,58 @@
-﻿namespace ACLI;
+﻿using System.Diagnostics.Contracts;
+
+namespace ACLI;
 
 public record CliProperties : IDisposable
 {
-    public CliProperties(IEnumerable<(string[] flags, Action<Cli, string[]> action)> actions, ConsoleStreams streams)
+    public CliProperties(IEnumerable<SuperArgument> arguments, ConsoleStreams streams)
     {
-        var distinctActions = actions.Distinct().ToArray();
-        var options = distinctActions.Select(t => t.flags).SelectMany(action => action).ToArray();
-        
-        // Only accept if options contains at least one element
-        if (options.Length <= 0)
+        // Store args as an array once to avoid enumerating multiple times
+        var args = arguments.ToArray();
+
+        // Make sure there is at least one argument
+        if (!args.Any())
         {
-            throw new ArgumentException("Options must contain at least one option.", nameof(options));
+            throw new ArgumentException("Arguments must contain at least one element.", nameof(arguments));
+        }
+        
+        // Make sure that the SuperArgs and SubArgs of them are valid - no duplicate flags
+        if (HasDupes(args))
+        {
+            throw new ArgumentException("Super-Arguments must have unique names/flags", nameof(arguments));
+        }
+        if (args.Any(a => a.SubArgs is not null && HasDupes(a.SubArgs)))
+        {
+            throw new ArgumentException("Sub-Arguments must have unique names/flags", nameof(arguments));
         }
 
-        // Only accept if actions only have valid keys
-        Options = new HashSet<string>(options);
-        Actions = distinctActions
-            .SelectMany(item => item.flags.Select(flag => new { flag, item.action }))
-            .ToDictionary(x => x.flag, x => x.action);
+        // Make a Fast dictionary for the args
+        var commandLookup = new Dictionary<string, Argument>();
+
+        foreach (var superArg in args)
+        {
+            // 1. Primary commands indexed by their plain names (e.g., "remote")
+            foreach (var name in superArg.Names)
+            {
+                commandLookup[name] = superArg;
+            }
+
+            if (superArg.SubArgs is not null)
+            {
+                // 2. Sub-args indexed with parent prefix (e.g., "remote:add")
+                string primaryParentName = superArg.Names[0];
+
+                foreach (var subArg in superArg.SubArgs)
+                {
+                    foreach (var subName in subArg.Names)
+                    {
+                        string compositeKey = $"{primaryParentName}:{subName}";
+                        commandLookup[compositeKey] = subArg;
+                    }
+                }
+            }
+        }
+
+        Arguments = commandLookup;
         
         // Make StreamReader/Writer for the standard streams
         Input = new StreamReader(streams.Input);
@@ -25,22 +60,20 @@ public record CliProperties : IDisposable
         Error = new StreamWriter(streams.Error);
     }
     
-    public readonly HashSet<string> Options;
-    public readonly IDictionary<string, Action<Cli, string[]>> Actions;
+    public readonly Dictionary<string, Argument> Arguments;
     public readonly StreamReader Input;
     public readonly StreamWriter Output;
     public readonly StreamWriter Error;
     
     public FlagPrefixType PrefixType { get; init; } = FlagPrefixType.Dash;
-    public bool SingleFlagOnly { get; init; } = true;
     
     
-    public Func<int, Exception> TooManyArgumentsError { get; init; } = (amount) => new Exception($"Too many arguments passed, only one flag is allowed. Should be: 1, is: {amount}");
     public Func<Exception> NoArgumentsError { get; init; } = () => new Exception("No arguments passed, use help to get a list of options.");
     public Func<string, string, Exception> IncorrectPrefixError { get; init; } = (expected, actual) => new Exception($"Incorrect prefix. Expected: {expected}, Actual: {actual}");
     public Func<Exception> DashPrefixError { get; init; } = () => new Exception("Incorrect prefix. Should be '--' for multi-letter flags and '-' for single-letter flags.");
+    public Func<string, Exception> IncorrectSuperArgError { get; init; } = (realArg) => new Exception($"'{realArg}' is not an accepted argument.");
     public Func<Exception> DefaultError { get; init; } = () => new Exception($"Something went wrong ): ...");
-
+    
 
     public void Dispose()
     {
@@ -48,4 +81,10 @@ public record CliProperties : IDisposable
         Output.Dispose();
         Error.Dispose();
     }
+
+    // This takes the distinct arguments and then compares if they are the same amount as the raw
+    private bool HasDupes(Argument[] args)
+        => args.SelectMany(a => a.Names)
+               .Distinct()
+               .Count() != args.Sum(a => a.Names.Length);
 }

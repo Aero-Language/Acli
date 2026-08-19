@@ -2,6 +2,9 @@
 
 internal static class Extensions
 {
+    public static string WithoutPrefix(this string str)
+        => str.Remove(0, str.PrefixOnly().Length);
+    
     public static string PrefixOnly(this string str)
     {
         var firstChar = str[0];
@@ -29,6 +32,7 @@ internal static class Extensions
             FlagPrefixType.Dash => str.StartsWith("-") && str.Length == 2 || str.StartsWith("--"),
             FlagPrefixType.StrictSingleDash => str.StartsWith("-"),
             FlagPrefixType.Slash => str.StartsWith("/"),
+            FlagPrefixType.None => !str.StartsWith("-") && !str.StartsWith("/"), // Make sure it doesn't start with any other prefix
             _ => false
         };
 }

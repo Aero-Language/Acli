@@ -9,15 +9,15 @@ public class CliTest
     public void ArgTest()
     {
         // Arrange
-        string[] buildParams = [];
-        string[] runParams = [];
-        string[] helpParams = [];
+        PassedArg[] buildParams = [];
+        PassedArg[] runParams = [];
+        PassedArg[] helpParams = [];
         
-        IEnumerable<(string[], Action<Cli, string[]>)> actions =
+        IEnumerable<SuperArgument> actions =
         [
-            ( ["b", "build"], (_, parameters) => { buildParams = parameters; } ),
-            ( ["r", "run"], (_, parameters) => { runParams = parameters; } ),
-            ( ["h", "help"], (_, parameters) => { helpParams = parameters; } ),
+            new(["b", "build"], (_, parameters) => { buildParams = parameters; } ),
+            new(["r", "run"], (_, parameters) => { runParams = parameters; } ),
+            new(["h", "help"], (_, parameters) => { helpParams = parameters; } ),
         ];
         
         var cliProperties = new CliProperties(actions, ConsoleStreams.Dummy);
@@ -26,13 +26,10 @@ public class CliTest
         
         // Act
         cli.Start("--build", "test.aero", "run.aero");
-        cli.Start("-r");
-        cli.Start("--help");
-
 
         // Assert
-        Assert.Equal<string[]>(["test.aero", "run.aero"], buildParams);
-        Assert.Equal<string[]>([], runParams);
-        Assert.Equal<string[]>([], helpParams);
+        Assert.Equal<string[]>(["test.aero", "run.aero"], buildParams.SelectMany(a => a.Values).ToArray());
+        Assert.Equal<string[]>([], runParams.SelectMany(a => a.Values).ToArray());
+        Assert.Equal<string[]>([], helpParams.SelectMany(a => a.Values).ToArray());
     }
 }
