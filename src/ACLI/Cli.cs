@@ -10,52 +10,73 @@ public class Cli(CliProperties properties) : IDisposable
         try
         {
 #endif
-            // Check for any arguments and throw if none are found
             if (args.Length <= 0)
             {
                 throw properties.NoArgumentsError();
             }
             
             int argCursor = 0;
-            var flag = ValidateFlag(args[argCursor]);
+            var initialRawFlag = args[argCursor];
+            var initialFlag = StripAndValidatePrefix(initialRawFlag);
                     
-            // If the first flag is any of the super-args, parse them, otherwise throw
-            if (properties.Arguments.TryGetValue(flag, out var arg) && arg is SuperArgument super)
+            if (properties.Arguments.TryGetValue(initialFlag, out var arg) && arg is SuperArgument super)
             {
                 argCursor++;
                 var parameters = new List<PassedArg>();
                 
-                // Get all the parameters that follow the flag
                 while (args.Length > argCursor)
                 {
-                    var nextFlag = args[argCursor].WithoutPrefix();
-                    
-                    // When the flag is a sub-arg
-                    if (properties.Arguments.ContainsKey(nextFlag))
+                    var currentRaw = args[argCursor];
+                    var currentClean = currentRaw.StartsWith(properties.PrefixType) 
+                        ? StripAndValidatePrefix(currentRaw) 
+                        : currentRaw;
+
+                    if (properties.Arguments.ContainsKey(currentClean))
                     {
+                        var flagName = currentClean;
+                        argCursor++;
                         var passedValues = new List<string>();
                         
-                        while (args.Length > argCursor && !properties.Arguments.ContainsKey(args[argCursor].WithoutPrefix()))
+                        while (args.Length > argCursor)
                         {
-                            passedValues.Add(args[argCursor]);
+                            var candidateRaw = args[argCursor];
+                            var candidateClean = candidateRaw.StartsWith(properties.PrefixType) 
+                                ? StripAndValidatePrefix(candidateRaw) 
+                                : candidateRaw;
+
+                            if (properties.Arguments.ContainsKey(candidateClean))
+                            {
+                                break; // Stop collecting values when hitting the next flag/argument
+                            }
+
+                            passedValues.Add(candidateRaw);
                             argCursor++;
                         }
                         
-                        parameters.Add(new PassedArg(ValidateFlag(nextFlag), passedValues.ToArray()));
-                        argCursor++;
+                        parameters.Add(new PassedArg(flagName, passedValues.ToArray()));
                     }
-                    else // The flag is a value
+                    else
                     {
+                        // Positional values belonging directly to the super argument
                         var passedValues = new List<string>();
                         
-                        while (args.Length > argCursor && !properties.Arguments.ContainsKey(args[argCursor]))
+                        while (args.Length > argCursor)
                         {
-                            passedValues.Add(args[argCursor]);
+                            var candidateRaw = args[argCursor];
+                            var candidateClean = candidateRaw.StartsWith(properties.PrefixType) 
+                                ? StripAndValidatePrefix(candidateRaw) 
+                                : candidateRaw;
+
+                            if (properties.Arguments.ContainsKey(candidateClean))
+                            {
+                                break;
+                            }
+
+                            passedValues.Add(candidateRaw);
                             argCursor++;
                         }
                         
-                        parameters.Add(new PassedArg(flag, passedValues.ToArray()));
-                        argCursor++;
+                        parameters.Add(new PassedArg(initialFlag, passedValues.ToArray()));
                     }
                 }
                 
@@ -63,38 +84,47 @@ public class Cli(CliProperties properties) : IDisposable
             }
             else
             {
-                throw properties.IncorrectSuperArgError(flag);
+                throw properties.IncorrectSuperArgError(initialFlag);
             }
 #if RELEASE
         }
         catch (Exception e)
         {
-            Console.WriteLine(e.ToString());
+            Error(e.ToString());
         }
 #endif
+    }
 
-        string ValidateFlag(string str)
+    private string StripAndValidatePrefix(string str)
+    {
+        if (!str.StartsWith(properties.PrefixType))
         {
-            // If it's not the expected prefix, throw
-            if (!str.StartsWith(properties.PrefixType))
-            {
-                throw properties.IncorrectPrefixError(properties.PrefixType.ExplainString(), str.PrefixOnly());
-            }
-            
-            // Return the string without the prefix
-            return str.Remove(0, str.PrefixOnly().Length);
+            throw properties.IncorrectPrefixError(properties.PrefixType.ExplainString(), str.PrefixOnly());
         }
+        
+        return str.Remove(0, str.PrefixOnly().Length);
     }
     
     public void Print(string text)
-        => properties.Output.Write(text);
+    {
+        properties.Output.Write(text);
+        properties.Output.Flush();
+    }
+
     public void PrintLn(string text)
-        => properties.Output.WriteLine(text);
+    {
+        properties.Output.WriteLine(text);
+        properties.Output.Flush();
+    }
+
     public void Error(string error)
-        => properties.Error.WriteLine(error);
+    {
+        properties.Error.WriteLine(error);
+        properties.Error.Flush();
+    }
 
     
-    public char Read()
+    public char Read() 
     {
         var read = properties.Input.Read();
         return read == -1 ? '\n' : (char)read;
