@@ -35,7 +35,7 @@ public class Cli(CliProperties properties) : IDisposable
                     {
                         var passedValues = new List<string>();
                         
-                        while (args.Length > argCursor && !properties.Arguments.ContainsKey(args[argCursor]))
+                        while (args.Length > argCursor && !properties.Arguments.ContainsKey(args[argCursor].WithoutPrefix()))
                         {
                             passedValues.Add(args[argCursor]);
                             argCursor++;
