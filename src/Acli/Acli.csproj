@@ -8,11 +8,11 @@
         <IsPackable>true</IsPackable>
         <GeneratePackageOnBuild>true</GeneratePackageOnBuild>
 
-        <PackageId>AeroLang.ACLI</PackageId>
-        <Version>0.2.3</Version>
+        <PackageId>AeroLang.Acli</PackageId>
+        <Version>0.3.0</Version>
         <Authors>AeroLang</Authors>
-        <Description>ACLI is a tool that makes it easy to configure and make your own CLI for your projects.</Description>
-        <RepositoryUrl>https://github.com/Aero-Language/ACLI</RepositoryUrl>
+        <Description>Acli is a tool that makes it easy to configure and make your own CLI for your projects.</Description>
+        <RepositoryUrl>https://github.com/Aero-Language/Acli</RepositoryUrl>
         <PackageReadmeFile>README.md</PackageReadmeFile>
         <PackageRequireLicenseAcceptance>true</PackageRequireLicenseAcceptance>
         <PackageLicenseExpression>MIT</PackageLicenseExpression>
