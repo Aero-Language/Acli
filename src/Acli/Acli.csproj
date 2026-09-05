@@ -9,7 +9,7 @@
         <GeneratePackageOnBuild>true</GeneratePackageOnBuild>
 
         <PackageId>AeroLang.Acli</PackageId>
-        <Version>0.3.0</Version>
+        <Version>0.3.2</Version>
         <Authors>AeroLang</Authors>
         <Description>Acli is a tool that makes it easy to configure and make your own CLI for your projects.</Description>
         <RepositoryUrl>https://github.com/Aero-Language/Acli</RepositoryUrl>

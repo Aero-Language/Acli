@@ -81,17 +81,47 @@ public class Cli(CliProperties properties)
 #endif
     }
 
-    public string? ReadLine() => properties.InputStream.ReadLine();
-    public string ReadAll() => properties.InputStream.ReadToEnd();
-    public char Read() => (char)properties.InputStream.Read();
+    public string? ReadLine() => properties.Streams.Input.ReadLine();
+    public string ReadAll() => properties.Streams.Input.ReadToEnd();
+    public char Read() => (char)properties.Streams.Input.Read();
+
+
+    // Object logs
+    public void Log(string line)
+    {
+        properties.Streams.Output.Write(line);
+        if (!properties.Streams.Output.AutoFlush) properties.Streams.Output.Flush();
+    }
+    public void Log<T>(T obj) => Log(obj?.ToString() ?? "");
+    public void LogLine(string line)
+    {
+        properties.Streams.Output.WriteLine(line);
+        if (!properties.Streams.Output.AutoFlush) properties.Streams.Output.Flush();
+    }
+    public void LogLine<T>(T obj) => LogLine(obj?.ToString() ?? "");
+    // Array Logs
+    public void Log(string[] elements) => Log($"[{string.Join(", ", elements)}]");
+    public void Log<T>(T[] objs) => Log(objs.Select(o => o?.ToString() ?? "").ToArray());
+    public void LogLine(string[] elements) => LogLine($"[{string.Join(", ", elements)}]");
+    public void LogLine<T>(T[] objs) => LogLine(objs.Select(o => o?.ToString() ?? "").ToArray());
     
     
-    public void LogLine(string line) => properties.LogStream.WriteLine(line);
-    public void Log(string line) => properties.LogStream.Write(line);
-    public void Log(string[] elements) => properties.LogStream.Write($"[{string.Join(", ", elements)}]");
-    public void Log<T>(T obj) => properties.LogStream.Write(obj?.ToString());
-    public void Log<T>(T[] objs) => properties.LogStream.Write($"[{string.Join(", ", objs.Select(obj => obj?.ToString()))}]");
-    
-    public void ErrorLine(string line) => properties.ErrorStream.WriteLine(line);
-    public void Error(string line) => properties.ErrorStream.Write(line);
+    // Object Errors
+    public void Error(string line)
+    {
+        properties.Streams.Error.Write(line);
+        if (!properties.Streams.Error.AutoFlush) properties.Streams.Error.Flush();
+    }
+    public void Error<T>(T obj) => Error(obj?.ToString() ?? "");
+    public void ErrorLine(string line)
+    {
+        properties.Streams.Error.WriteLine(line);
+        if (!properties.Streams.Error.AutoFlush) properties.Streams.Error.Flush();
+    }
+    public void ErrorLine<T>(T obj) => ErrorLine(obj?.ToString() ?? "");
+    // Array Errors
+    public void Error(string[] elements) => Error($"[{string.Join(", ", elements)}]");
+    public void Error<T>(T[] objs) => Error(objs.Select(o => o?.ToString() ?? "").ToArray());
+    public void ErrorLine(string[] elements) => ErrorLine($"[{string.Join(", ", elements)}]");
+    public void ErrorLine<T>(T[] objs) => ErrorLine(objs.Select(o => o?.ToString() ?? "").ToArray());
 }
