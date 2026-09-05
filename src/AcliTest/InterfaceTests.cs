@@ -40,7 +40,7 @@ public class InterfaceTests
         // Arrange
         var properties = new CliProperties(Flags) { Interface = new DosInterface() };
         var cli = new Cli(properties);
-        string[] parameters = ["/b", "/v", "test.aero"];
+        string[] parameters = ["/b",  "test.aero"];
         
         // Act
         cli.Start(parameters);
