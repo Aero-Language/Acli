@@ -13,7 +13,7 @@ Acli is a modern, lightweight, and extensible C# / .NET 10 library designed to m
 
 Install ACLI using the .NET CLI:
 
-```bash
+```sh
 dotnet add package AeroLang.ACLI
 ```
 
@@ -27,7 +27,7 @@ Install-Package AeroLang.ACLI
 
 ## What the End-User sees
 The Cli can be customized in multiple different ways:
-```bash
+```sh
 acli -p --print   // Standard POSIX interface
 acli /p /print    // DOS style
 Acli -P -Print    // Powershell style
@@ -37,7 +37,7 @@ acli print        // Prefix-Less style (highly discouraged)
 
 Here the POSIX interface is special in that it also supports argument merging.
 So these act the same!
-```bash
+```sh
 acli -p -v    // Print + Verbose
 acli -pv
 ```
