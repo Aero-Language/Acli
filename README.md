@@ -1,5 +1,6 @@
 # Alci - Advanced Command Line Interface
 
+[![Build & Test](https://github.com/Aero-Language/Acli/actions/workflows/dotnet.yml/badge.svg)](https://github.com/<OWNER>/<REPOSITORY>/actions/workflows/<WORKFLOW_FILE>.yml)
 [![NuGet Version](https://img.shields.io/nuget/v/AeroLang.ACLI.svg?style=flat-square)](https://www.nuget.org/packages/AeroLang.ACLI/)
 [![NuGet Downloads](https://img.shields.io/nuget/dt/AeroLang.ACLI.svg?style=flat-square)](https://www.nuget.org/packages/AeroLang.ACLI/)
 [![Framework](https://img.shields.io/badge/framework-.NET%2010.0-purple.svg?style=flat-square)](https://dotnet.microsoft.com/)
